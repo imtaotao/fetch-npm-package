@@ -9,8 +9,9 @@
 <body>
   <script src="./dist/fetch.umd.js"></script>
   <script>
-    const { fetchPkg } = FetchNpmPackage;
-    fetchPkg()
+    const { Fetcher } = FetchNpmPackage;
+    const fetcher = new Fetcher();
+    fetcher.fetch('react');
   </script>
 </body>
 </html>
