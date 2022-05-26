@@ -2,16 +2,17 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Fetch npm package</title>
 </head>
 <body>
-  <script src="./dist/fetch.umd.js"></script>
+  <div>Please open the console to start the test</div>
+  <script src='https://unpkg.com/fetch-npm-package/dist/fetch.umd.js'></script>
   <script>
-    const { Fetcher } = FetchNpmPackage;
-    const fetcher = new Fetcher();
-    fetcher.fetch('react');
+    const { fetchPackage, fetchFiles } = FetchNpmPackage;
+    fetchPackage('react').then((result) => {
+      console.log(result);
+    })
   </script>
 </body>
 </html>

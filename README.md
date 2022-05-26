@@ -5,14 +5,27 @@
 
 </div>
 
-Use js to download and unzip the npm package.
+Use js to download and unzip the npm package. only supports use in the browser.
 
+[Online](https://imtaotao.github.io/fetch-npm-package/)
 
 ## Usage
 
-```js
-import { } from 'fetch-npm-package';
+Options are optional.
 
+```js
+import { fetchFiles, fetchPackage } from 'fetch-npm-package';
+
+// All file are flattened
+const files = await fetchFiles('react', {
+  version: 'latest', // default is `latest`
+  registry: 'https://registry.npmjs.org' // default is `https://registry.npmjs.org`
+});
+console.log(files);
+
+// Aggregate as a folder
+const folder = await fetchPackage('react');
+console.log(folder);
 ```
 
 
@@ -24,7 +37,7 @@ import { } from 'fetch-npm-package';
 <body>
   <script src='https://unpkg.com/fetch-npm-package/dist/fetch.umd.js'></script>
   <script>
-    const {} = FetchNpmPackage;
+    const { fetchFiles, fetchPackage } = FetchNpmPackage;
     // ...
   </script>
 </body>

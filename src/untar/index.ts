@@ -20,6 +20,7 @@ export function untar(arrayBuffer: ArrayBuffer) {
   if (!(arrayBuffer instanceof ArrayBuffer)) {
     throw new TypeError("arrayBuffer is not an instance of ArrayBuffer.");
   }
+
   if (!globalThis.Worker) {
     throw new Error(
       "Worker implementation is not available in this environment."
