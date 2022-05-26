@@ -74,7 +74,7 @@ export function fetchPackage(pkgName: string, options?: FetchOptions) {
 
     for (const file of files) {
       let parent = packageFolder;
-      const parts = file.name.split("/");
+      const parts = file.path.split("/");
       for (let i = 0; i < parts.length - 1; i++) {
         let current = parent.children[parts[i]];
         if (!current) {
