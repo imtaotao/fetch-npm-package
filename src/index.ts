@@ -52,19 +52,24 @@ export function fetchFiles(pkgName: string, options?: FetchOptions) {
         .then(inflate)
         .then((arr) => arr.buffer)
         .then(untar)
-        .then((files) =>
-          files.map(({ name, size, buffer }) => {
-            const code = new TextDecoder("utf-8").decode(buffer);
-            const parts = name.split("/");
-            return {
-              size,
-              code,
-              type: "file",
-              name: parts.slice(-1)[0],
-              path: parts.slice(1).join("/"),
-            } as File;
-          })
-        );
+        .then((files) => {
+          const res: Array<File> = [];
+          for (const { name, size, type, buffer } of files) {
+            if (type === "" || type === "0") {
+              // file
+              const code = new TextDecoder("utf-8").decode(buffer);
+              const parts = name.split("/");
+              res.push({
+                size,
+                code,
+                type: "file",
+                name: parts.slice(-1)[0],
+                path: parts.slice(1).join("/"),
+              });
+            }
+          }
+          return res;
+        });
     });
 }
 
