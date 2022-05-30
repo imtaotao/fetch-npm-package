@@ -1,7 +1,7 @@
 import { inflate } from "pako";
 import { untar } from "./untar";
 
-export { untar } from './untar';
+export { untar } from "./untar";
 
 export interface File {
   name: string;
@@ -9,6 +9,7 @@ export interface File {
   path: string;
   type: "file";
   code: string;
+  parent?: Folder;
 }
 
 export interface Folder {
@@ -17,11 +18,13 @@ export interface Folder {
   path: string;
   type: "folder";
   children: Record<string, Folder | File>;
+  parent?: Folder;
 }
 
 export interface FetchOptions {
   version?: string;
   registry?: string;
+  parent?: boolean;
 }
 
 function createFolder(name: string, path: string): Folder {
@@ -40,8 +43,9 @@ function createFolder(name: string, path: string): Folder {
   };
 }
 
-function createPackageFolder(files: Array<File>) {
+function createPackageFolder(files: Array<File>, setParent?: boolean) {
   const packageFolder = createFolder("package", "package");
+  if (setParent) packageFolder.parent = undefined;
 
   for (const file of files) {
     let parent = packageFolder;
@@ -53,11 +57,13 @@ function createPackageFolder(files: Array<File>) {
           parts[i],
           parts.slice(0, i + 1).join("/")
         );
+        if (setParent) current.parent = parent;
       } else if (current.type === "file") {
         continue;
       }
       parent = current;
     }
+    if (setParent) file.parent = parent;
     parent.children[file.name] = file;
   }
   return packageFolder;
@@ -101,11 +107,15 @@ fetchFiles.tarball = function (tarball: string) {
 };
 
 export function fetchPackage(pkgName: string, options?: FetchOptions) {
-  return fetchFiles(pkgName, options).then(createPackageFolder);
+  return fetchFiles(pkgName, options).then((files) =>
+    createPackageFolder(files, options ? options.parent : false)
+  );
 }
 
-fetchPackage.tarball = function (tarball: string) {
-  return fetchFiles.tarball(tarball).then(createPackageFolder);
+fetchPackage.tarball = function (tarball: string, setParent?: boolean) {
+  return fetchFiles
+    .tarball(tarball)
+    .then((files) => createPackageFolder(files, setParent));
 };
 
 export function findTarget(folder: Folder, path: string) {
