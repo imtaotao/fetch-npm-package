@@ -28,6 +28,16 @@ const folder = await fetchPackage('react');
 console.log(folder);
 ```
 
+By tarball request
+
+```js
+const files = await fetchFiles.tarball('https://registry.npmjs.org/react/-/react-18.1.0.tgz');
+console.log(files);
+
+const folder = await fetchPackage.tarball('https://registry.npmjs.org/react/-/react-18.1.0.tgz');
+console.log(folder);
+
+```
 
 ## CDN
 
