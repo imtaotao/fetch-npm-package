@@ -44,6 +44,15 @@ export class Folder {
     }
     return totalSize;
   }
+
+  get fileCount() {
+    let count = 0;
+    for (const key in this.children) {
+      const item = this.children[key];
+      count += item.type === "file" ? 1 : item.fileCount;
+    }
+    return count;
+  }
 }
 
 export function createPackageFolder(files: Array<File>, setParent?: boolean) {

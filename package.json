@@ -1,6 +1,6 @@
 {
   "name": "fetch-npm-package",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "Use js to download and unzip the npm package",
   "main": "dist/fetch.cjs.js",
   "unpkg": "dist/fetch.umd.js",
