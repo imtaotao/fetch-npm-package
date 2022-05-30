@@ -29,7 +29,7 @@ export class Folder {
   public name: string;
   public path: string;
   public type: "folder" = "folder";
-  public children: Record<string, Folder | File> = {};
+  public children: Record<string, Folder | File> = Object.create(null);
   public parent?: Folder;
 
   constructor(name: string, path: string) {
