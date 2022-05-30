@@ -9,7 +9,7 @@
   <div>Please open the console to start the test</div>
   <script src='https://unpkg.com/fetch-npm-package/dist/fetch.umd.js'></script>
   <script>
-    const { fetchPackage, fetchFiles } = FetchNpmPackage;
+    const { fetchPackage, fetchFiles, findTarget } = FetchNpmPackage;
     fetchPackage('@arco-design/web-react').then((result) => {
       console.log(result);
     })

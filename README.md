@@ -9,12 +9,13 @@ Use js to download and unzip the npm package. only supports use in the browser.
 
 [Online](https://imtaotao.github.io/fetch-npm-package/)
 
+
 ## Usage
 
 Options are optional.
 
 ```js
-import { fetchFiles, fetchPackage } from 'fetch-npm-package';
+import { fetchFiles, fetchPackage, findTarget } from 'fetch-npm-package';
 
 // All file are flattened
 const files = await fetchFiles('react', {
@@ -28,7 +29,7 @@ const folder = await fetchPackage('react');
 console.log(folder);
 ```
 
-By tarball request
+By tarball request.
 
 ```js
 const files = await fetchFiles.tarball('https://registry.npmjs.org/react/-/react-18.1.0.tgz');
@@ -39,6 +40,17 @@ console.log(folder);
 
 ```
 
+Find package file.
+
+```js
+const folder = await fetchPackage('react');
+console.log(folder);
+
+const target = findTargetFile(folder, 'cjs/react-jsx-dev-runtime.development.js');
+console.log(target.code);
+```
+
+
 ## CDN
 
 ```html
@@ -47,9 +59,14 @@ console.log(folder);
 <body>
   <script src='https://unpkg.com/fetch-npm-package/dist/fetch.umd.js'></script>
   <script>
-    const { fetchFiles, fetchPackage } = FetchNpmPackage;
+    const { fetchFiles, fetchPackage, findTarget } = FetchNpmPackage;
     // ...
   </script>
 </body>
 </html>
 ```
+
+
+## Extended use
+
+If you want to find a file more precisely based on package.json, you can use [node-package-exports](https://github.com/imtaotao/node-package-exports).

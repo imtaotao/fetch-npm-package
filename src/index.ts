@@ -61,6 +61,17 @@ function createPackageFolder(files: Array<File>) {
   return packageFolder;
 }
 
+export function fetchFiles(pkgName: string, options?: FetchOptions) {
+  let { version, registry } = options || {};
+  if (!version) version = "latest";
+  if (!registry) registry = "https://registry.npmjs.org";
+  if (!registry.endsWith("/")) registry += "/";
+
+  return fetch(`${registry}${pkgName}/${version}`)
+    .then((res) => res.json())
+    .then((pkgDetail) => fetchFiles.tarball(pkgDetail.dist.tarball));
+}
+
 fetchFiles.tarball = function (tarball: string) {
   return fetch(tarball)
     .then((res) => res.arrayBuffer())
@@ -87,21 +98,26 @@ fetchFiles.tarball = function (tarball: string) {
     });
 };
 
+export function fetchPackage(pkgName: string, options?: FetchOptions) {
+  return fetchFiles(pkgName, options).then(createPackageFolder);
+}
+
 fetchPackage.tarball = function (tarball: string) {
   return fetchFiles.tarball(tarball).then(createPackageFolder);
 };
 
-export function fetchFiles(pkgName: string, options?: FetchOptions) {
-  let { version, registry } = options || {};
-  if (!version) version = "latest";
-  if (!registry) registry = "https://registry.npmjs.org";
-  if (!registry.endsWith("/")) registry += "/";
-
-  return fetch(`${registry}${pkgName}/${version}`)
-    .then((res) => res.json())
-    .then((pkgDetail) => fetchFiles.tarball(pkgDetail.dist.tarball));
-}
-
-export function fetchPackage(pkgName: string, options?: FetchOptions) {
-  return fetchFiles(pkgName, options).then(createPackageFolder);
+export function findTarget(folder: Folder, path: string) {
+  const parts = path.split("/");
+  let target: File | Folder = folder;
+  for (let i = 0, l = parts.length; i < l; i++) {
+    if (i === l - 1) {
+      target = (target as Folder).children[parts[i]];
+    } else {
+      target = (target as Folder).children[parts[i]];
+      if (target.type !== "folder") {
+        return null;
+      }
+    }
+  }
+  return target;
 }
