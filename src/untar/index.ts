@@ -3,24 +3,21 @@
 import { TarFile, workerBody } from "./worker";
 import { ProgressivePromise } from "./progressivePromise";
 
-function inlineWork(fn: (...args: Array<any>) => void) {
+let workerUrl: string;
+
+function inlineWorkUrl(fn: (...args: Array<any>) => void) {
   const fnBodyStr = fn
     .toString()
     .trim()
     .match(/^function\s*\w*\s*\([\w\s,]*\)\s*{([\w\W]*?)}$/)![1];
-  const url = globalThis.URL.createObjectURL(
+  return globalThis.URL.createObjectURL(
     new globalThis.Blob([fnBodyStr], {
       type: "text/javascript",
     })
   );
-  return new globalThis.Worker(url);
 }
 
 export function untar(arrayBuffer: ArrayBuffer) {
-  if (!(arrayBuffer instanceof ArrayBuffer)) {
-    throw new TypeError("arrayBuffer is not an instance of ArrayBuffer.");
-  }
-
   if (!globalThis.Worker) {
     throw new Error(
       "Worker implementation is not available in this environment."
@@ -28,7 +25,10 @@ export function untar(arrayBuffer: ArrayBuffer) {
   }
 
   return ProgressivePromise((resolve, reject, progress) => {
-    const worker = inlineWork(workerBody);
+    if (!workerUrl) {
+      workerUrl = inlineWorkUrl(workerBody);
+    }
+    const worker = new globalThis.Worker(workerUrl);
     const files: Array<TarFile> = [];
 
     worker.onerror = function (err) {

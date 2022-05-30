@@ -1,6 +1,8 @@
 import { inflate } from "pako";
 import { untar } from "./untar";
 
+export { untar } from './untar';
+
 export interface File {
   name: string;
   size: number;
@@ -81,8 +83,8 @@ fetchFiles.tarball = function (tarball: string) {
     .then((files) => {
       const res: Array<File> = [];
       for (const { name, size, type, buffer } of files) {
+        // file
         if (type === "" || type === "0") {
-          // file
           const code = new TextDecoder("utf-8").decode(buffer);
           const parts = name.split("/");
           res.push({
