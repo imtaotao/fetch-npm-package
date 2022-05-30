@@ -14,7 +14,7 @@ export class File {
   public size: number;
   public name: string;
   public path: string;
-  public type = "file";
+  public type: "file" = "file";
   public parent?: Folder;
 
   constructor(code: string, size: number, name: string, path: string) {
@@ -28,7 +28,7 @@ export class File {
 export class Folder {
   public name: string;
   public path: string;
-  public type = "folder";
+  public type: "folder" = "folder";
   public children: Record<string, Folder | File> = {};
   public parent?: Folder;
 
