@@ -3,48 +3,51 @@ import { untar } from "./untar";
 
 export { untar } from "./untar";
 
-export interface File {
-  name: string;
-  size: number;
-  path: string;
-  type: "file";
-  code: string;
-  parent?: Folder;
-}
-
-export interface Folder {
-  name: string;
-  size: number;
-  path: string;
-  type: "folder";
-  children: Record<string, Folder | File>;
-  parent?: Folder;
-}
-
 export interface FetchOptions {
   version?: string;
   registry?: string;
   parent?: boolean;
 }
 
-function createFolder(name: string, path: string): Folder {
-  return {
-    name,
-    path,
-    children: {},
-    type: "folder",
-    get size() {
-      let totalSize = 0;
-      for (const key in this.children) {
-        totalSize += this.children[key].size;
-      }
-      return totalSize;
-    },
-  };
+export class File {
+  public code: string;
+  public size: number;
+  public name: string;
+  public path: string;
+  public type = "file";
+  public parent?: Folder;
+
+  constructor(code: string, size: number, name: string, path: string) {
+    this.code = code;
+    this.size = size;
+    this.name = name;
+    this.path = path;
+  }
 }
 
-function createPackageFolder(files: Array<File>, setParent?: boolean) {
-  const packageFolder = createFolder("package", "package");
+export class Folder {
+  public name: string;
+  public path: string;
+  public type = "folder";
+  public children: Record<string, Folder | File> = {};
+  public parent?: Folder;
+
+  constructor(name: string, path: string) {
+    this.name = name;
+    this.path = path;
+  }
+
+  get size() {
+    let totalSize = 0;
+    for (const key in this.children) {
+      totalSize += this.children[key].size;
+    }
+    return totalSize;
+  }
+}
+
+export function createPackageFolder(files: Array<File>, setParent?: boolean) {
+  const packageFolder = new Folder("package", "package");
   if (setParent) packageFolder.parent = undefined;
 
   for (const file of files) {
@@ -53,7 +56,7 @@ function createPackageFolder(files: Array<File>, setParent?: boolean) {
     for (let i = 0; i < parts.length - 1; i++) {
       let current = parent.children[parts[i]];
       if (!current) {
-        parent.children[parts[i]] = current = createFolder(
+        parent.children[parts[i]] = current = new Folder(
           parts[i],
           parts.slice(0, i + 1).join("/")
         );
@@ -61,7 +64,7 @@ function createPackageFolder(files: Array<File>, setParent?: boolean) {
       } else if (current.type === "file") {
         continue;
       }
-      parent = current;
+      parent = current as Folder;
     }
     if (setParent) file.parent = parent;
     parent.children[file.name] = file;
@@ -93,13 +96,9 @@ fetchFiles.tarball = function (tarball: string) {
         if (type === "" || type === "0") {
           const code = new TextDecoder("utf-8").decode(buffer);
           const parts = name.split("/");
-          res.push({
-            size,
-            code,
-            type: "file",
-            name: parts.slice(-1)[0],
-            path: parts.slice(1).join("/"),
-          });
+          res.push(
+            new File(code, size, parts.slice(-1)[0], parts.slice(1).join("/"))
+          );
         }
       }
       return res;
