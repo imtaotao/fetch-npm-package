@@ -55,13 +55,19 @@ export class Folder {
   }
 }
 
-export function createPackageFolder(files: Array<File>, setParent?: boolean) {
+export function createPackageFolder(
+  files: Record<string, File>,
+  setParent?: boolean
+) {
+  const keys = Object.keys(files);
   const packageFolder = new Folder("package", "package");
   if (setParent) packageFolder.parent = undefined;
 
-  for (const file of files) {
+  for (const filepath of keys) {
     let parent = packageFolder;
-    const parts = file.path.split("/");
+    const file = files[filepath];
+    const parts = filepath.split("/");
+
     for (let i = 0; i < parts.length - 1; i++) {
       let current = parent.children[parts[i]];
       if (!current) {
@@ -78,6 +84,7 @@ export function createPackageFolder(files: Array<File>, setParent?: boolean) {
     if (setParent) file.parent = parent;
     parent.children[file.name] = file;
   }
+
   return packageFolder;
 }
 
@@ -99,15 +106,19 @@ fetchFiles.tarball = function (tarball: string) {
     .then((arr) => arr.buffer)
     .then(untar)
     .then((files) => {
-      const res: Array<File> = [];
+      const res: Record<string, File> = Object.create(null);
       for (const { name, size, type, buffer } of files) {
         // file
         if (type === "" || type === "0") {
           const code = new TextDecoder("utf-8").decode(buffer);
           const parts = name.split("/");
-          res.push(
-            new File(code, size, parts.slice(-1)[0], parts.slice(1).join("/"))
+          const file = new File(
+            code,
+            size,
+            parts.slice(-1)[0],
+            parts.slice(1).join("/")
           );
+          res[file.path] = file;
         }
       }
       return res;
@@ -130,13 +141,9 @@ export function findTarget(folder: Folder, path: string) {
   const parts = path.split("/");
   let target: File | Folder = folder;
   for (let i = 0, l = parts.length; i < l; i++) {
-    if (i === l - 1) {
-      target = (target as Folder).children[parts[i]];
-    } else {
-      target = (target as Folder).children[parts[i]];
-      if (target.type !== "folder") {
-        return null;
-      }
+    target = (target as Folder).children[parts[i]];
+    if (i !== l - 1 && target.type !== "folder") {
+      return null;
     }
   }
   return target;
