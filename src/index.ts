@@ -146,5 +146,8 @@ export function findTarget(folder: Folder, path: string) {
       return null;
     }
   }
-  return target && target.type === "file" ? target : null;
+  // Maybe `object.toString` function
+  return target && (target.type === "file" || target.type === "folder")
+    ? target
+    : null;
 }
