@@ -146,5 +146,5 @@ export function findTarget(folder: Folder, path: string) {
       return null;
     }
   }
-  return target;
+  return target && target.type === "file" ? target : null;
 }
