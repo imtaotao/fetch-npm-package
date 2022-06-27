@@ -1,10 +1,10 @@
 {
   "name": "fetch-npm-package",
-  "version": "1.0.13",
+  "version": "1.0.14",
   "description": "Use js to download and unzip the npm package",
   "main": "dist/fetch.cjs.js",
   "unpkg": "dist/fetch.umd.js",
-  "module": "dist/fetch.esm-builder.js",
+  "module": "dist/fetch.esm-bundler.js",
   "types": "dist/src/index.d.ts",
   "scripts": {
     "test": "jest",
