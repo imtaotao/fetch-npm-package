@@ -102,7 +102,7 @@ export function fetchFiles(pkgName: string, options?: FetchOptions) {
 fetchFiles.tarball = function (tarball: string) {
   return fetch(tarball)
     .then((res) => res.arrayBuffer())
-    .then(inflate)
+    .then((buffer) => inflate(new Uint8Array(buffer)))
     .then((arr) => arr.buffer)
     .then(untar)
     .then((files) => {
