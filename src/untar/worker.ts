@@ -19,9 +19,10 @@ export interface TarFile {
   prefix?: string;
 }
 
-export function workerBody() {
+// Avoid being translated by babel, use strings
+export const workerBodyCode = `
   class UntarWorker {
-    onmessage(msg: MessageEvent<any>) {
+    onmessage(msg) {
       try {
         if (msg.data.type === "extract") {
           this.untarBuffer(msg.data.buffer);
@@ -29,21 +30,21 @@ export function workerBody() {
           throw new Error("Unknown message type: " + msg.data.type);
         }
       } catch (err) {
-        this.postError(err as any);
+        this.postError(err);
       }
     }
 
-    postError(err: Error) {
+    postError(err) {
       // console.info("postError(" + err.message + ")" + " " + JSON.stringify(err));
       this.postMessage({ type: "error", data: { message: err.message } });
     }
 
-    postLog(level: string, msg: MessageEvent<any>) {
+    postLog(level, msg) {
       // console.info("postLog");
       this.postMessage({ type: "log", data: { level: level, msg: msg } });
     }
 
-    untarBuffer(arrayBuffer: ArrayBuffer) {
+    untarBuffer(arrayBuffer) {
       try {
         const tarFileStream = new UntarFileStream(arrayBuffer);
 
@@ -54,11 +55,11 @@ export function workerBody() {
 
         this.postMessage({ type: "complete" });
       } catch (err) {
-        this.postError(err as any);
+        this.postError(err);
       }
     }
 
-    postMessage(msg: any, transfers?: any) {
+    postMessage(msg, transfers) {
       // console.info("postMessage(" + msg + ", " + JSON.stringify(transfers) + ")");
       self.postMessage(msg, transfers);
     }
@@ -74,7 +75,7 @@ export function workerBody() {
 
   // Source: https://gist.github.com/pascaldekloe/62546103a1576803dade9269ccf76330
   // Unmarshals an Uint8Array to string.
-  function decodeUTF8(bytes: Uint8Array) {
+  function decodeUTF8(bytes) {
     let s = "";
     let i = 0;
     while (i < bytes.length) {
@@ -127,22 +128,15 @@ export function workerBody() {
     return s;
   }
 
-  type Fields = Array<{
-    name: string;
-    value: string | number | null;
-  }>;
-
   class PaxHeader {
-    private _fields: Fields;
-
-    constructor(fields: Fields) {
+    constructor(fields) {
       this._fields = fields;
     }
 
-    static parse(buffer: ArrayBuffer) {
+    static parse(buffer) {
       // https://www.ibm.com/support/knowledgecenter/en/SSLTBW_2.3.0/com.ibm.zos.v2r3.bpxa500/paxex.htm
       // An extended header shall consist of one or more records, each constructed as follows:
-      // "%d %s=%s\n", <length>, <keyword>, <value>
+      // "%d %s=%s\\n", <length>, <keyword>, <value>
 
       // The extended header records shall be encoded according to the ISO/IEC10646-1:2000 standard (UTF-8).
       // The <length> field, <blank>, equals sign, and <newline> shown shall be limited to the portable character set, as
@@ -158,18 +152,18 @@ export function workerBody() {
           decodeUTF8(bytes.subarray(0, bytes.indexOf(0x20)))
         );
         const fieldText = decodeUTF8(bytes.subarray(0, fieldLength));
-        const fieldMatch = fieldText.match(/^\d+ ([^=]+)=(.*)\n$/);
+        const fieldMatch = fieldText.match(/^\\d+ ([^=]+)=(.*)\\n$/);
 
         if (fieldMatch === null) {
           throw new Error("Invalid PAX header data format.");
         }
 
         const fieldName = fieldMatch[1];
-        let fieldValue: string | number | null = fieldMatch[2];
+        let fieldValue = fieldMatch[2];
 
         if (fieldValue.length === 0) {
           fieldValue = null;
-        } else if (fieldValue.match(/^\d+$/) !== null) {
+        } else if (fieldValue.match(/^\\d+$/) !== null) {
           // If it's a integer field, parse it as int
           fieldValue = parseInt(fieldValue);
         }
@@ -186,7 +180,7 @@ export function workerBody() {
       return new PaxHeader(fields);
     }
 
-    applyHeader(file: TarFile) {
+    applyHeader(file) {
       // Apply fields to the file
       // If a field is of value null, it should be deleted from the file
       // https://www.mkssoftware.com/docs/man4/pax.4.asp
@@ -208,24 +202,24 @@ export function workerBody() {
         }
 
         if (fieldValue === null) {
-          delete (file as any)[fieldName];
+          delete file[fieldName];
         } else {
-          (file as any)[fieldName] = fieldValue;
+          file[fieldName] = fieldValue;
         }
       });
     }
   }
 
   class UntarStream {
-    private _position: number;
-    private _bufferView: DataView;
+    _position;
+    _bufferView;
 
-    constructor(arrayBuffer: ArrayBuffer) {
+    constructor(arrayBuffer) {
       this._bufferView = new DataView(arrayBuffer);
       this._position = 0;
     }
 
-    readString(charCount: number) {
+    readString(charCount) {
       // console.log("readString: position " + this.position() + ", " + charCount + " chars");
       const charSize = 1;
       const byteCount = charCount * charSize;
@@ -246,7 +240,7 @@ export function workerBody() {
       return String.fromCharCode.apply(null, charCodes);
     }
 
-    readBuffer(byteCount: number) {
+    readBuffer(byteCount) {
       let buf;
 
       if (typeof ArrayBuffer.prototype.slice === "function") {
@@ -269,7 +263,7 @@ export function workerBody() {
       return buf;
     }
 
-    seek(byteCount: number) {
+    seek(byteCount) {
       this._position += byteCount;
     }
 
@@ -277,7 +271,7 @@ export function workerBody() {
       return this._bufferView.getUint32(this.position(), true);
     }
 
-    position(newpos?: number) {
+    position(newpos) {
       if (newpos !== undefined) {
         this._position = newpos;
       }
@@ -290,10 +284,7 @@ export function workerBody() {
   }
 
   class UntarFileStream {
-    private _stream: UntarStream;
-    private _globalPaxHeader: PaxHeader | null;
-
-    constructor(arrayBuffer: ArrayBuffer) {
+    constructor(arrayBuffer) {
       this._stream = new UntarStream(arrayBuffer);
       this._globalPaxHeader = null;
     }
@@ -313,7 +304,7 @@ export function workerBody() {
     _readNextFile() {
       let paxHeader = null;
       let isHeaderFile = false;
-      let file: TarFile = {} as any;
+      let file = {};
 
       const stream = this._stream;
       const headerBeginPos = stream.position();
@@ -409,4 +400,4 @@ export function workerBody() {
       return file;
     }
   }
-}
+`;

@@ -1,19 +1,13 @@
 // fork js-untar (https://github.com/InvokIT/js-untar)
 
-import { TarFile, workerBody } from "./worker";
+import { TarFile, workerBodyCode } from "./worker";
 import { ProgressivePromise } from "./progressivePromise";
 
 let workerUrl: string;
 
-function inlineWorkUrl(fn: (...args: Array<any>) => void) {
-  const fnBodyStr = fn
-    .toString()
-    .trim()
-    .match(/^function\s*\w*\s*\([\w\s,]*\)\s*{([\w\W]*?)}$/)![1];
+function inlineWorkUrl(code: string) {
   return globalThis.URL.createObjectURL(
-    new globalThis.Blob([fnBodyStr], {
-      type: "text/javascript",
-    })
+    new globalThis.Blob([code], { type: "text/javascript" })
   );
 }
 
@@ -26,7 +20,7 @@ export function untar(arrayBuffer: ArrayBuffer) {
 
   return ProgressivePromise((resolve, reject, progress) => {
     if (!workerUrl) {
-      workerUrl = inlineWorkUrl(workerBody);
+      workerUrl = inlineWorkUrl(workerBodyCode);
     }
     const worker = new globalThis.Worker(workerUrl);
     const files: Array<TarFile> = [];
