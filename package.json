@@ -8,6 +8,7 @@
   "types": "dist/src/index.d.ts",
   "scripts": {
     "test": "jest",
+    "dev": "npx http-server ./ -o",
     "build": "rollup --config",
     "format": "prettier --write --parser typescript \"(src|dist)/**/*.(js|ts?(x))\""
   },
@@ -35,6 +36,7 @@
     "@rollup/plugin-json": "^4.1.0",
     "@rollup/plugin-node-resolve": "^13.1.3",
     "@types/jest": "^27.4.0",
+    "http-server": "^14.1.1",
     "jest": "^27.5.1",
     "prettier": "^2.5.1",
     "rollup": "^2.67.2",
