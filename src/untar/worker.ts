@@ -211,9 +211,6 @@ export const workerBodyCode = `
   }
 
   class UntarStream {
-    _position;
-    _bufferView;
-
     constructor(arrayBuffer) {
       this._bufferView = new DataView(arrayBuffer);
       this._position = 0;

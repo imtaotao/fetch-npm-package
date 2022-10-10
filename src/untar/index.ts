@@ -1,5 +1,4 @@
-// fork js-untar (https://github.com/InvokIT/js-untar)
-
+// js-untar (https://github.com/InvokIT/js-untar)
 import { TarFile, workerBodyCode } from "./worker";
 import { ProgressivePromise } from "./progressivePromise";
 
